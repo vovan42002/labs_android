@@ -5,12 +5,26 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+    <Button
+        android:id="@+id/back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
+        android:text="@string/back"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/results" />
+
     <ListView
         android:id="@+id/results"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_marginBottom="50dp"
-        app:layout_constraintHeight="wrap_content"
+        android:stackFromBottom="true"
+        android:transcriptMode="alwaysScroll"
+        android:divider="@color/orange"
+        android:dividerHeight="2dp"
+        app:layout_constraintDimensionRatio="H,1:1"
         app:layout_constraintLeft_toRightOf="parent"
         app:layout_constraintBottom_toTopOf="@id/first">
     </ListView>
@@ -20,7 +34,7 @@
         android:layout_width="30dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="40dp"
-        android:text="-----"
+        android:text="@string/dashed"
         android:textSize="20dp"
         app:layout_constraintLeft_toRightOf="@id/number1"
         app:layout_constraintBottom_toTopOf="@id/number1">
@@ -31,7 +45,7 @@
         android:layout_width="30dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="40dp"
-        android:text="-----"
+        android:text="@string/dashed"
         android:textSize="20dp"
         app:layout_constraintLeft_toRightOf="@id/first"
         app:layout_constraintBottom_toTopOf="@id/number1">
@@ -42,7 +56,7 @@
         android:layout_width="30dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="40dp"
-        android:text="-----"
+        android:text="@string/dashed"
         android:textSize="20dp"
         app:layout_constraintLeft_toRightOf="@id/second"
         app:layout_constraintBottom_toTopOf="@id/number1">
@@ -53,7 +67,7 @@
         android:layout_width="30dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="40dp"
-        android:text="-----"
+        android:text="@string/dashed"
         android:textSize="20dp"
         app:layout_constraintLeft_toRightOf="@id/third"
         app:layout_constraintBottom_toTopOf="@id/number1">
@@ -64,7 +78,7 @@
         android:layout_width="30dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="40dp"
-        android:text="-----"
+        android:text="@string/dashed"
         android:textSize="20dp"
         app:layout_constraintLeft_toRightOf="@id/fourth"
         app:layout_constraintBottom_toTopOf="@id/number1">
@@ -75,7 +89,7 @@
         android:layout_width="30dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="40dp"
-        android:text="-----"
+        android:text="@string/dashed"
         android:textSize="20dp"
         app:layout_constraintLeft_toRightOf="@id/fifth"
         app:layout_constraintBottom_toTopOf="@id/number1">

@@ -7,10 +7,6 @@
     <string name="about">About</string>
     <string name="exit">Exit</string>
 
-    <string name="level1">Low</string>
-    <string name="level2">Medium</string>
-    <string name="level3">Hard</string>
-
     <string-array name="levels">
         <item>Low</item>
         <item>Medium</item>
@@ -27,5 +23,13 @@
     <string name="number8">8</string>
     <string name="number9">9</string>
     <string name="number0">0</string>
+
+    <string name="dashed">----</string>
+
+    <string name="ok">Ok</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="winMessage">You win!</string>
+    <string name="back">Go back!</string>
 
 </resources>
