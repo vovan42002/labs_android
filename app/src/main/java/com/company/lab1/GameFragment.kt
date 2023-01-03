@@ -12,6 +12,7 @@ import android.widget.TextView
 import androidx.compose.runtime.mutableStateListOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import com.company.lab1.R.string
 import java.util.*
 
 class GameFragment : Fragment() {
@@ -49,7 +50,7 @@ class GameFragment : Fragment() {
         }
     }
 
-    private fun delete_last(
+    private fun deleteLast(
         counter: Int,
 
         el1: TextView,
@@ -70,9 +71,10 @@ class GameFragment : Fragment() {
         btn9: Button,
         btn0: Button
     ) {
-        if (counter == 1) {
+        val elements = arrayOf(el1, el2, el3, el4, el5, el6)
+        if (counter in 1..6) {
             get_button_by_text(
-                el1.text as String,
+                elements[counter - 1].text as String,
                 btn1,
                 btn2,
                 btn3,
@@ -84,87 +86,7 @@ class GameFragment : Fragment() {
                 btn9,
                 btn0
             ).isEnabled = true
-            el1.text = R.string.dashed.toString()
-            this.counter -= 1
-        } else if (counter == 2) {
-            get_button_by_text(
-                el2.text as String,
-                btn1,
-                btn2,
-                btn3,
-                btn4,
-                btn5,
-                btn6,
-                btn7,
-                btn8,
-                btn9,
-                btn0
-            ).isEnabled = true
-            el2.text = R.string.dashed.toString()
-            this.counter -= 1
-        } else if (counter == 3) {
-            get_button_by_text(
-                el3.text as String,
-                btn1,
-                btn2,
-                btn3,
-                btn4,
-                btn5,
-                btn6,
-                btn7,
-                btn8,
-                btn9,
-                btn0
-            ).isEnabled = true
-            el3.text = R.string.dashed.toString()
-            this.counter -= 1
-        } else if (counter == 4) {
-            get_button_by_text(
-                el4.text as String,
-                btn1,
-                btn2,
-                btn3,
-                btn4,
-                btn5,
-                btn6,
-                btn7,
-                btn8,
-                btn9,
-                btn0
-            ).isEnabled = true
-            el4.text = R.string.dashed.toString()
-            this.counter -= 1
-        } else if (counter == 5) {
-            get_button_by_text(
-                el5.text as String,
-                btn1,
-                btn2,
-                btn3,
-                btn4,
-                btn5,
-                btn6,
-                btn7,
-                btn8,
-                btn9,
-                btn0
-            ).isEnabled = true
-            el5.text = R.string.dashed.toString()
-            this.counter -= 1
-        } else if (counter == 6) {
-            get_button_by_text(
-                el6.text as String,
-                btn1,
-                btn2,
-                btn3,
-                btn4,
-                btn5,
-                btn6,
-                btn7,
-                btn8,
-                btn9,
-                btn0
-            ).isEnabled = true
-            el6.text = R.string.dashed.toString()
+            elements[counter - 1].text = "----"
             this.counter -= 1
         }
     }
@@ -181,94 +103,16 @@ class GameFragment : Fragment() {
         el5: TextView,
         el6: TextView
     ) {
+        val elements = arrayOf(el1, el2, el3, el4, el5, el6)
         if (counter < n) {
-            if (n == 4) {
-                when (counter) {
-                    0 -> {
-                        el1.text = text
-                        this.counter += 1
-                        btn.isEnabled = false
-                    }
-                    1 -> {
-                        el2.text = text
-                        this.counter += 1
-                        btn.isEnabled = false
-                    }
-                    2 -> {
-                        el3.text = text
-                        this.counter += 1
-                        btn.isEnabled = false
-                    }
-                    3 -> {
-                        el4.text = text
-                        this.counter += 1
-                        btn.isEnabled = false
-                    }
-                }
-            } else if (n == 5) {
-                when (counter) {
-                    0 -> {
-                        el1.text = text
-                        this.counter += 1
-                        btn.isEnabled = false
-                    }
-                    1 -> {
-                        el2.text = text
-                        this.counter += 1
-                        btn.isEnabled = false
-                    }
-                    2 -> {
-                        el3.text = text
-                        this.counter += 1
-                        btn.isEnabled = false
-                    }
-                    3 -> {
-                        el4.text = text
-                        this.counter += 1
-                        btn.isEnabled = false
-                    }
-                    4 -> {
-                        el5.text = text
-                        this.counter += 1
-                        btn.isEnabled = false
-                    }
-                }
-            } else if (n == 6) {
-                when (counter) {
-                    0 -> {
-                        el1.text = text
-                        this.counter += 1
-                        btn.isEnabled = false
-                    }
-                    1 -> {
-                        el2.text = text
-                        this.counter += 1
-                        btn.isEnabled = false
-                    }
-                    2 -> {
-                        el3.text = text
-                        this.counter += 1
-                        btn.isEnabled = false
-                    }
-                    3 -> {
-                        el4.text = text
-                        this.counter += 1
-                        btn.isEnabled = false
-                    }
-                    4 -> {
-                        el5.text = text
-                        this.counter += 1
-                        btn.isEnabled = false
-                    }
-                    5 -> {
-                        el6.text = text
-                        this.counter += 1
-                        btn.isEnabled = false
-                    }
-                }
+            if (counter in 0..5) {
+                elements[counter].text = text
+                this.counter += 1
+                btn.isEnabled = false
             }
         }
     }
+
 
     private fun goBack() {
         val fm: FragmentManager = requireActivity().supportFragmentManager
@@ -388,7 +232,7 @@ class GameFragment : Fragment() {
                 write(btnNumber0, "0", n, counter, el1, el2, el3, el4, el5, el6)
             }
             btnDeleteLast.setOnClickListener {
-                delete_last(
+                deleteLast(
                     counter,
                     el1,
                     el2,
@@ -440,14 +284,14 @@ class GameFragment : Fragment() {
 
                     if (trie[0] == n) {
                         val builder = AlertDialog.Builder(requireContext())
-                        builder.setTitle(R.string.winMessage)
+                        builder.setTitle(string.winMessage)
                         builder.setMessage("You won on try $cnt")
 
-                        builder.setPositiveButton(R.string.ok) { dialog, which ->
+                        builder.setPositiveButton(string.ok) { dialog, which ->
                             goBack()
                         }
 
-                        builder.setNegativeButton(R.string.cancel) { dialog, which ->
+                        builder.setNegativeButton(string.cancel) { dialog, which ->
                             goBack()
                         }
                         builder.show()
