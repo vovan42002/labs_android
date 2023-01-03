@@ -23,7 +23,7 @@ class GameFragment : Fragment() {
     var number = ArrayList<Int>()
     var generated = false
 
-    private fun get_button_by_text(
+    private fun getButtonByText(
         text: String,
         btn1: Button,
         btn2: Button,
@@ -73,7 +73,7 @@ class GameFragment : Fragment() {
     ) {
         val elements = arrayOf(el1, el2, el3, el4, el5, el6)
         if (counter in 1..6) {
-            get_button_by_text(
+            getButtonByText(
                 elements[counter - 1].text as String,
                 btn1,
                 btn2,
