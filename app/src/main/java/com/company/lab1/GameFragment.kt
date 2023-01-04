@@ -17,7 +17,7 @@ import java.util.*
 
 class GameFragment : Fragment() {
     var counter = 0
-
+    //
     var cnt = 0
     val resultList = ArrayList<String>()
     var number = ArrayList<Int>()
