@@ -9,14 +9,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Lab1">
+        <receiver
+            android:name=".ResultReceiver"
+            android:enabled="true"
+            android:exported="true">
+        </receiver>
+
         <service
             android:name=".MyIntentService"
-            android:exported="false">
-        </service>
-
-        <receiver
-            android:name=".MyBroadCastReceiver">
-        </receiver>
+            android:exported="false"></service>
 
         <activity
             android:name=".AboutActivity"

@@ -1,9 +1,9 @@
 package com.company.lab1
 
 import android.app.AlertDialog
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
@@ -12,7 +12,6 @@ import android.widget.ListView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import java.util.*
-import android.content.IntentFilter
 
 class GameActivity : AppCompatActivity() {
 
@@ -21,17 +20,79 @@ class GameActivity : AppCompatActivity() {
     var cnt = 0
     private val resultList = ArrayList<String>()
     var number = ArrayList<Int>()
+    var lastGuess = ArrayList<Int>()
     var generated = false
+
+    var n = 0
 
     var trie = ArrayList<Int>()
 
+    private lateinit var arrayAdapter: ArrayAdapter<String>
+
+
+    private val resultReceiver = object : ResultReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == MyIntentService.ACTION_GENERATE_ARRAY) {
+                if (!generated) {
+                    number = intent.getIntegerArrayListExtra(MyIntentService.EXTRA_OUT_NUMBER)!!
+                    generated = true
+                }
+            } else if (intent.action == MyIntentService.ACTION_GET_BULLS_COWS) {
+                trie = intent.getIntegerArrayListExtra(MyIntentService.EXTRA_OUT_BULL_COW)!!
+                cnt += 1
+                val msg = "№" + cnt + " Bulls: " + trie[0] + " Cows: " + trie[1] + "\t" + lastGuess
+                resultList.add(msg)
+                lastGuess.clear()
+                arrayAdapter.notifyDataSetChanged()
+
+                if (trie[0] == n) {
+                    val builder = AlertDialog.Builder(context)
+                    builder.setTitle(R.string.winMessage)
+                    builder.setMessage("You won on try $cnt")
+
+                    builder.setPositiveButton(R.string.ok) { dialog, which ->
+                        goBack()
+                    }
+
+                    builder.setNegativeButton(R.string.cancel) { dialog, which ->
+                        goBack()
+                    }
+                    builder.show()
+                }
+            }
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val intentFilter = IntentFilter()
+        intentFilter.addCategory(Intent.CATEGORY_DEFAULT)
+        intentFilter.addAction(MyIntentService.ACTION_GENERATE_ARRAY)
+        intentFilter.addAction(MyIntentService.ACTION_GET_BULLS_COWS)
+        registerReceiver(resultReceiver, intentFilter)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(resultReceiver)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game)
 
-        val n = intent.getIntExtra("N", 4)
+        arrayAdapter =
+            ArrayAdapter(this, android.R.layout.simple_list_item_1, resultList)
+        val listOfResults: ListView = findViewById(R.id.results)
+        listOfResults.adapter = arrayAdapter
+
+        n = intent.getIntExtra("N", 4)
         if (n != null) {
+
+            val intentService = Intent(this, MyIntentService()::class.java)
+            intentService.action = MyIntentService.ACTION_GENERATE_ARRAY
+            intentService.putExtra(MyIntentService.EXTRA_IN_NUMBER_SIZE, n)
+            startService(intentService)
 
             val btnNumber1: Button = findViewById(R.id.number1)
             val btnNumber2: Button = findViewById(R.id.number2)
@@ -48,11 +109,6 @@ class GameActivity : AppCompatActivity() {
             val btnOk: Button = findViewById(R.id.btn_ok)
             val btnBack: Button = findViewById(R.id.back)
 
-            val listOfResults: ListView = findViewById(R.id.results)
-
-            val arrayAdapter =
-                ArrayAdapter(this, android.R.layout.simple_list_item_1, resultList)
-            listOfResults.adapter = arrayAdapter
 
             val el1: TextView = findViewById(R.id.first)
             val el2: TextView = findViewById(R.id.second)
@@ -125,56 +181,26 @@ class GameActivity : AppCompatActivity() {
             }
             btnOk.setOnClickListener {
                 if (counter == n) {
-                    val guess = ArrayList<Int>()
-                    guess.add(Integer.parseInt(el1.text as String))
-                    guess.add(Integer.parseInt(el2.text as String))
-                    guess.add(Integer.parseInt(el3.text as String))
-                    guess.add(Integer.parseInt(el4.text as String))
+                    lastGuess.add(Integer.parseInt(el1.text as String))
+                    lastGuess.add(Integer.parseInt(el2.text as String))
+                    lastGuess.add(Integer.parseInt(el3.text as String))
+                    lastGuess.add(Integer.parseInt(el4.text as String))
 
                     if (counter == 5) {
-                        guess.add(Integer.parseInt(el5.text as String))
+                        lastGuess.add(Integer.parseInt(el5.text as String))
                     }
                     if (counter == 6) {
-                        guess.add(Integer.parseInt(el5.text as String))
-                        guess.add(Integer.parseInt(el6.text as String))
+                        lastGuess.add(Integer.parseInt(el5.text as String))
+                        lastGuess.add(Integer.parseInt(el6.text as String))
                     }
 
-                    val bundle: Bundle = Bundle()
-                    if (!generated) {
-                        bundle.putInt("N", intent.getIntExtra("N", 4))
-                    }
-                    val intentService: Intent = Intent(this, MyIntentService()::class.java)
-                    intentService.putExtras(bundle)
-                    startService(intentService)
+                    val intentService2 = Intent(this, MyIntentService()::class.java)
+                    intentService2.action = MyIntentService.ACTION_GET_BULLS_COWS
+                    intentService2.putExtra(MyIntentService.EXTRA_IN_NUMBER, number)
+                    intentService2.putExtra(MyIntentService.EXTRA_IN_GUESS, lastGuess)
+                    startService(intentService2)
 
-                    val filter = IntentFilter(MyIntentService.ACTION_GENERATE_ARRAY)
-                    filter.addCategory(Intent.CATEGORY_DEFAULT)
-                    registerReceiver(receiver, filter)
 
-                    val filter2 = IntentFilter(MyIntentService.ACTION_GET_BULLS_COWS)
-                    filter2.addCategory(Intent.CATEGORY_DEFAULT)
-                    registerReceiver(receiver, filter2)
-
-                    cnt += 1
-                    val msg = "№" + cnt + " Bulls :" + trie[0] + " Cows: " + trie[1] + "\t" + guess
-                    resultList.add(msg)
-
-                    arrayAdapter.notifyDataSetChanged()
-
-                    if (trie[0] == n) {
-                        val builder = AlertDialog.Builder(this)
-                        builder.setTitle(R.string.winMessage)
-                        builder.setMessage("You won on try $cnt")
-
-                        builder.setPositiveButton(R.string.ok) { dialog, which ->
-                            goBack()
-                        }
-
-                        builder.setNegativeButton(R.string.cancel) { dialog, which ->
-                            goBack()
-                        }
-                        builder.show()
-                    }
 
                     btnNumber0.isEnabled = true
                     btnNumber1.isEnabled = true
@@ -197,21 +223,6 @@ class GameActivity : AppCompatActivity() {
                     this.counter = 0
                 }
             }
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        unregisterReceiver(receiver)
-    }
-
-    private var receiver = object : MyBroadCastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            if (!generated){
-                number = intent?.getIntegerArrayListExtra("NUMBER")!!
-                generated = true
-            }
-            trie = intent?.getIntegerArrayListExtra("BULLS_COWS")!!
         }
     }
 
@@ -304,7 +315,6 @@ class GameActivity : AppCompatActivity() {
             }
         }
     }
-
 
     private fun goBack() {
         this.finish()

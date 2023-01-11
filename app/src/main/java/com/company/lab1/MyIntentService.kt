@@ -3,37 +3,35 @@ package com.company.lab1
 import android.app.IntentService
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import java.util.*
 
 class MyIntentService : IntentService("IntentService") {
 
-    private val ACTION_UPDATE = "com.company.lab1.MyIntentService.UPDATE"
-    private val BULLS_COWS = "BULLS_COWS"
-    private val NUMBER = "NUMBER"
-    private val GUESS = "GUESS"
-
     override fun onHandleIntent(intent: Intent?) {
 
         val action = intent?.action ?: return
-        val number = intent.getIntegerArrayListExtra(NUMBER)
-        val guess = intent.getIntegerArrayListExtra(GUESS)
-        val n = intent.getIntExtra("n", 4)
+        val number = intent.getIntegerArrayListExtra(EXTRA_IN_NUMBER)
+        val guess = intent.getIntegerArrayListExtra(EXTRA_IN_GUESS)
+        val n = intent.getIntExtra(EXTRA_IN_NUMBER_SIZE, 4)
         val bundle = Bundle()
 
+        val broadcastIntent = Intent()
         when (action) {
             ACTION_GENERATE_ARRAY -> {
-                bundle.putIntegerArrayList(NUMBER, getRandomUnrepeating(n))
+                bundle.putIntegerArrayList(EXTRA_OUT_NUMBER, getRandomUnrepeating(n))
+                broadcastIntent.action = ACTION_GENERATE_ARRAY
             }
             ACTION_GET_BULLS_COWS -> {
-                if (number != null && guess != null)
-                    bundle.putIntegerArrayList(BULLS_COWS, getBullsCows(number, guess))
+                if (number != null && guess != null){
+                    bundle.putIntegerArrayList(EXTRA_OUT_BULL_COW, getBullsCows(number, guess))
+                }
+                broadcastIntent.action = ACTION_GET_BULLS_COWS
             }
             else ->
                 throw RuntimeException("Unknown action!")
         }
-        val broadcastIntent = Intent()
-        broadcastIntent.action = ACTION_UPDATE
         broadcastIntent.addCategory(Intent.CATEGORY_DEFAULT)
         broadcastIntent.putExtras(bundle)
         sendBroadcast(broadcastIntent)
@@ -59,8 +57,8 @@ class MyIntentService : IntentService("IntentService") {
 
     private fun getBullsCows(number: ArrayList<Int>, guess: ArrayList<Int>): ArrayList<Int> {
         val bull_cow = ArrayList<Int>()
-        bull_cow[0] = 0
-        bull_cow[1] = 0
+        bull_cow.add(0)
+        bull_cow.add(0)
         for (i in 0..(number.size - 1)) {
             if (contain(guess[i], number)) {
                 if (guess[i] == number[i]) {
@@ -74,12 +72,12 @@ class MyIntentService : IntentService("IntentService") {
     }
 
     companion object {
-        const val ACTION_GENERATE_ARRAY =
-            BuildConfig.APPLICATION_ID + ".ACTION_GENERATE_ARRAY"
-        const val ACTION_GET_BULLS_COWS =
-            BuildConfig.APPLICATION_ID + ".ACTION_GET_BULLS_COWS"
-        const val EXTRA_ARRAY_SIZE = "EXTRA_ARRAY_SIZE"
-        @JvmField val TAG: String =
-            MyIntentService::class.java.simpleName
+        const val ACTION_GENERATE_ARRAY = BuildConfig.APPLICATION_ID + ".ACTION_GENERATE_ARRAY"
+        const val ACTION_GET_BULLS_COWS = BuildConfig.APPLICATION_ID + ".ACTION_GET_BULLS_COWS"
+        const val EXTRA_IN_NUMBER_SIZE = BuildConfig.APPLICATION_ID + "EXTRA_IN_NUMBER_SIZE"
+        const val EXTRA_IN_NUMBER = BuildConfig.APPLICATION_ID + "EXTRA_IN_NUMBER"
+        const val EXTRA_IN_GUESS = BuildConfig.APPLICATION_ID + "EXTRA_IN_GUESS"
+        const val EXTRA_OUT_BULL_COW = BuildConfig.APPLICATION_ID + "EXTRA_OUT_BULL_COW"
+        const val EXTRA_OUT_NUMBER = BuildConfig.APPLICATION_ID + "EXTRA_OUT_NUMBER"
     }
 }
