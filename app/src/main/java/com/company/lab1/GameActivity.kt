@@ -1,17 +1,17 @@
 package com.company.lab1
 
-import android.app.AlertDialog
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
 import android.os.Bundle
+import android.os.Handler
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ListView
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.mutableStateListOf
 import java.util.*
+
 
 class GameActivity : AppCompatActivity() {
 
@@ -29,54 +29,6 @@ class GameActivity : AppCompatActivity() {
 
     private lateinit var arrayAdapter: ArrayAdapter<String>
 
-
-    private val resultReceiver = object : ResultReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            if (intent.action == MyIntentService.ACTION_GENERATE_ARRAY) {
-                if (!generated) {
-                    number = intent.getIntegerArrayListExtra(MyIntentService.EXTRA_OUT_NUMBER)!!
-                    generated = true
-                }
-            } else if (intent.action == MyIntentService.ACTION_GET_BULLS_COWS) {
-                trie = intent.getIntegerArrayListExtra(MyIntentService.EXTRA_OUT_BULL_COW)!!
-                cnt += 1
-                val msg = "№" + cnt + " Bulls: " + trie[0] + " Cows: " + trie[1] + "\t" + lastGuess
-                resultList.add(msg)
-                lastGuess.clear()
-                arrayAdapter.notifyDataSetChanged()
-
-                if (trie[0] == n) {
-                    val builder = AlertDialog.Builder(context)
-                    builder.setTitle(R.string.winMessage)
-                    builder.setMessage("You won on try $cnt")
-
-                    builder.setPositiveButton(R.string.ok) { dialog, which ->
-                        goBack()
-                    }
-
-                    builder.setNegativeButton(R.string.cancel) { dialog, which ->
-                        goBack()
-                    }
-                    builder.show()
-                }
-            }
-        }
-    }
-
-    override fun onStart() {
-        super.onStart()
-        val intentFilter = IntentFilter()
-        intentFilter.addCategory(Intent.CATEGORY_DEFAULT)
-        intentFilter.addAction(MyIntentService.ACTION_GENERATE_ARRAY)
-        intentFilter.addAction(MyIntentService.ACTION_GET_BULLS_COWS)
-        registerReceiver(resultReceiver, intentFilter)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        unregisterReceiver(resultReceiver)
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game)
@@ -89,10 +41,13 @@ class GameActivity : AppCompatActivity() {
         n = intent.getIntExtra("N", 4)
         if (n != null) {
 
-            val intentService = Intent(this, MyIntentService()::class.java)
-            intentService.action = MyIntentService.ACTION_GENERATE_ARRAY
-            intentService.putExtra(MyIntentService.EXTRA_IN_NUMBER_SIZE, n)
-            startService(intentService)
+            LooperThread { thread, looperHandler ->
+                if (!generated){
+                    number = getRandomUnrepeating(n)
+                    generated = true
+                }
+                thread.shutdown();
+            }.start()
 
             val btnNumber1: Button = findViewById(R.id.number1)
             val btnNumber2: Button = findViewById(R.id.number2)
@@ -194,13 +149,31 @@ class GameActivity : AppCompatActivity() {
                         lastGuess.add(Integer.parseInt(el6.text as String))
                     }
 
-                    val intentService2 = Intent(this, MyIntentService()::class.java)
-                    intentService2.action = MyIntentService.ACTION_GET_BULLS_COWS
-                    intentService2.putExtra(MyIntentService.EXTRA_IN_NUMBER, number)
-                    intentService2.putExtra(MyIntentService.EXTRA_IN_GUESS, lastGuess)
-                    startService(intentService2)
+                    LooperThread { thread, looperHandler ->
+                        trie = getBullsCows(number, lastGuess)
+                        cnt += 1
+                        val msg = "№" + cnt + " Bulls: " + trie[0] + " Cows: " + trie[1] + "\t" + lastGuess
+                        resultList.add(msg)
+                        lastGuess.clear()
 
+                        arrayAdapter.notifyDataSetChanged()
 
+                        if (trie[0] == n) {
+                            val builder = AlertDialog.Builder(this)
+                            builder.setTitle(R.string.winMessage)
+                            builder.setMessage("You won on try $cnt")
+
+                            builder.setPositiveButton(R.string.ok) { dialog, which ->
+                                goBack()
+                            }
+
+                            builder.setNegativeButton(R.string.cancel) { dialog, which ->
+                                goBack()
+                            }
+                            builder.show()
+                        }
+                        thread.shutdown();
+                    }.start()
 
                     btnNumber0.isEnabled = true
                     btnNumber1.isEnabled = true
@@ -224,6 +197,40 @@ class GameActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+
+    private fun getRandomUnrepeating(digits: Int): ArrayList<Int> {
+        val res = ArrayList<Int>()
+        val nums = mutableStateListOf(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
+        Collections.shuffle(nums)
+        for (i in 0..digits - 1) {
+            res.add(nums[i])
+        }
+        return res
+    }
+
+    private fun contain(number: Int, array: ArrayList<Int>): Boolean {
+        for (el in array) {
+            if (number == el)
+                return true
+        }
+        return false
+    }
+
+    private fun getBullsCows(number: ArrayList<Int>, guess: ArrayList<Int>): ArrayList<Int> {
+        val bull_cow = ArrayList<Int>()
+        bull_cow.add(0)
+        bull_cow.add(0)
+        for (i in 0..(number.size - 1)) {
+            if (contain(guess[i], number)) {
+                if (guess[i] == number[i]) {
+                    bull_cow[0] += 1
+                } else {
+                    bull_cow[1] += 1
+                }
+            }
+        }
+        return bull_cow
     }
 
     private fun getButtonByText(
@@ -320,3 +327,6 @@ class GameActivity : AppCompatActivity() {
         this.finish()
     }
 }
+
+typealias OnHandlerCreatedListener =
+            (LooperThread, Handler) -> Unit
